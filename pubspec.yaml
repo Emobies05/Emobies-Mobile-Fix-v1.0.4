@@ -2,14 +2,6 @@ name: emobies_app
 description: Emobies mobile repair app
 version: 1.0.4+4
 
-dependencies:
-  flutter:
-    sdk: flutter
-  cupertino
-  name: emobies_app
-description: Emobies mobile repair app
-version: 1.0.4+4
-
 environment:
   sdk: '>=3.0.0 <4.0.0'
 

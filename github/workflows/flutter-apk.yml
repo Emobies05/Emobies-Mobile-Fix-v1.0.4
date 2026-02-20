@@ -1,31 +1,63 @@
-name: Build Emobies APK
-on: 
+name: Build Flutter APK
+
+on:
   push:
-    branches: [ "main" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
     
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.19.0'
+        flutter-version: '3.19.5'
         channel: 'stable'
     
-    - name: Install dependencies
-      run: flutter pub get
+    - name: Show Flutter version
+      run: flutter --version
     
-    - name: Build APK
-      run: flutter build apk --release
+    - name: Flutter Doctor
+      run: flutter doctor -v
     
+    - name: Clean Flutter
+      run: |
+        flutter clean
+        flutter pub get
+    
+    - name: Android dependencies
+      run: |
+        cd android
+        ./gradlew clean
+        ./gradlew build
+        cd ..
+    
+    - name: Build APK (Release)
+      run: |
+        flutter build apk --release --split-per-abi
+        ls -la build/app/outputs/flutter-apk/
+    
+    - name: Rename APK
+      run: |
+        mkdir -p dist
+        cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk dist/emobies-v1.0.4-arm64.apk
+        cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk dist/emobies-v1.0.4-arm.apk
+        
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: emobies-staking-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: Emobies-APK-v1.0.4
+        path: dist/*.apk

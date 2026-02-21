@@ -1,62 +1,41 @@
-name: Build Flutter APK
+name: Emobies Production APK
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch:  # Manual "Run workflow" button
 
 jobs:
   build:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     
-    - name: Setup Java
-      uses: actions/setup-java@v4
+    - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
-        
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.19.5'
-        channel: 'stable'
     
-    - name: Show Flutter version
-      run: flutter --version
+    - uses: subosito/flutter-action@v2  # Latest stable Flutter ✅
     
-    - name: Flutter Doctor
+    - name: Check Flutter doctor
       run: flutter doctor -v
     
-    - name: Clean Flutter
-      run: |
-        flutter clean
-        flutter pub get
+    - name: Get dependencies
+      run: flutter clean && flutter pub get
     
-    - name: Android dependencies
-      run: |
-        cd android
-        ./gradlew clean
-        ./gradlew build
-        cd ..
+    - name: Build RELEASE APK (Production)
+      run: flutter build apk --release
     
-    - name: Build APK (DEBUG - Google Play Ready)
+    - name: Prepare artifacts
       run: |
-        flutter build apk --debug
-        ls -la build/app/outputs/flutter-apk/
+        mkdir dist
+        cp build/app/outputs/flutter-apk/app-release.apk dist/Emobies-v1.0.6-$(date +%Y%m%d).apk
+        ls -la dist/
     
-    - name: Rename APK
-      run: |
-        mkdir -p dist
-        cp build/app/outputs/flutter-apk/app-debug.apk dist/emobies-v1.0.4-debug.apk
-        
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v4
       with:
-        name: Emobies-APK-v1.0.4
+        name: Emobies-Production-APK
         path: dist/*.apk
+        retention-days: 30

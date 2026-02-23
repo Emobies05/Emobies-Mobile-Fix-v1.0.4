@@ -1,2 +1,21 @@
-# Emobies-Mobile-Fix-v1.0.4
-Flutter API 35 upgrade - Google Play loading crash fix
+# Emobies — Mobile Repair App
+
+We Care Your Mobile As Babies 📱
+
+## Features
+- 🔧 Doorstep mobile repair booking
+- 🪙 EmoCoins reward system
+- 🔐 TheWall crypto tracker
+- 🤖 Emowall AI assistant
+
+## Tech Stack
+- Flutter (Dart)
+- Node.js backend (DigitalOcean)
+- MongoDB
+- Alchemy Web3
+
+## Build
+Automated via GitHub Actions — signed APK + AAB generated on every push to main.
+
+## Contact
+Kannur · Dubai · Divin K.K.

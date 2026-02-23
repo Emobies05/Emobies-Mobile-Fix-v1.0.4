@@ -1,34 +1,14 @@
-# Gradle files
-.gradle/
-build/
-
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.aab
-*.apk
-output-metadata.json
-
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
-
-# Keystore files
-*.jks
+# Keystore — never commit these
+android/key.properties
 *.keystore
+*.jks
+*.b64
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
+# Environment
+.env
+.env.local
 
-# Android Profiling
-*.hprof
+# Flutter
+.dart_tool/
+build/
+*.g.dart

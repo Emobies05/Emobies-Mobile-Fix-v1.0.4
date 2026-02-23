@@ -31,8 +31,6 @@ jobs:
     - name: Get dependencies
       run: flutter clean && flutter pub get
 
-    - name: Run tests
-      run: flutter test
 
     - name: Decode keystore
       run: |

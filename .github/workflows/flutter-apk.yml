@@ -46,10 +46,14 @@ jobs:
           EOF
 
       - name: Build signed APK
-        run: flutter build apk --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
+        run: |
+          API_URL=$(echo "${{ secrets.API_BASE_URL }}" | tr -d '[:space:]')
+          flutter build apk --release --dart-define=API_BASE="$API_URL"
 
       - name: Build signed AAB
-        run: flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
+        run: |
+          API_URL=$(echo "${{ secrets.API_BASE_URL }}" | tr -d '[:space:]')
+          flutter build appbundle --release --dart-define=API_BASE="$API_URL"
 
       - name: Prepare artifacts
         run: |

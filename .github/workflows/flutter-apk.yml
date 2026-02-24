@@ -52,8 +52,8 @@ jobs:
 
     - name: Build signed AAB
       run: |
-        flutter build appbundle --release \
-          --dart-define=API_BASE=${{ secrets.API_BASE_URL }}
+        flutter build apk --release \
+          --dart-define=API_BASE=YOUR_VALUE{{ secrets.API_BASE_URL }}
 
     - name: Prepare artifacts
       run: |

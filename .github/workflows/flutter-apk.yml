@@ -28,11 +28,12 @@ jobs:
         VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d ' ')
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+    - name: Create Android project structure
+      run: |
+        flutter create --org com.nxtbit --project-name emobies_app .
+
     - name: Get dependencies
       run: flutter clean && flutter pub get
-
-    
-      
 
     - name: Decode keystore
       run: |

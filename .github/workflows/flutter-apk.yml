@@ -36,7 +36,7 @@ jobs:
       run: |
         mkdir -p android/app
         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/emobies.keystore
-        cat > android/key.properties << EOF update 
+        cat > android/key.properties << EOF  
         storePassword=${{ secrets.KEYSTORE_PASSWORD }}
         keyPassword=${{ secrets.KEY_PASSWORD }}
         keyAlias=${{ secrets.KEY_ALIAS }}

@@ -19,3 +19,4 @@ Automated via GitHub Actions — signed APK + AAB generated on every push to mai
 
 ## Contact
 Kannur · Dubai · Divin K.K.
+Updated on Feb 26: Ready for Play Store with new signing key.

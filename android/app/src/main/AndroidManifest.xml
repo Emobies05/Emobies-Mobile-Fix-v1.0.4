@@ -25,3 +25,12 @@
             android:value="2" />
     </application>
 </manifest>
+
+- name: Verify MainActivity
+        run: |
+          echo "=== Finding all MainActivity files ==="
+          find android -name "MainActivity.kt" -type f
+          echo "=== Manifest content ==="
+          cat android/app/src/main/AndroidManifest.xml
+          echo "=== build.gradle content ==="
+          cat android/app/build.gradle | head -20

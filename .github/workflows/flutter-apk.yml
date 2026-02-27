@@ -1,4 +1,4 @@
-name: Flutter Build APK
+name: Flutter Build AAB
 
 on:
   push:
@@ -32,10 +32,8 @@ jobs:
           class MainActivity: FlutterFragmentActivity()
           EOF
 
-      - name: Update target SDK to 35
-        run: |
-          sed -i 's/compileSdk 34/compileSdk 35/' android/app/build.gradle
-          sed -i 's/targetSdk 34/targetSdk 35/' android/app/build.gradle
+      - name: Flutter clean
+        run: flutter clean
 
       - name: Flutter pub get
         run: flutter pub get
@@ -48,3 +46,17 @@ jobs:
         with:
           name: emowall-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
+
+      - name: Upload ProGuard Mapping (optional)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proguard-mapping
+          path: build/app/outputs/mapping/release/mapping.txt
+
+      - name: Upload Native Debug Symbols (optional)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-debug-symbols
+          path: build/app/intermediates/merged_native_libs/release/out/lib

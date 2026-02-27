@@ -24,7 +24,6 @@ jobs:
 
       - name: Specialist Project Reset
         run: |
-          # പ്രോജക്റ്റ് സ്ട്രക്ചർ പ്ലേ സ്റ്റോർ ഐഡിയുമായി സിങ്ക് ചെയ്യുന്നു
           rm -rf android
           flutter create . --platforms=android --org com.nxtbit --project-name emobies_24
 
@@ -33,10 +32,7 @@ jobs:
 
       - name: Decode Keystore & Signing Setup
         run: |
-          # കീസ്റ്റോർ ഡീകോഡ് ചെയ്യുന്നു
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/emobies.keystore
-          
-          # key.properties സെറ്റ് ചെയ്യുന്നു
           cat > android/key.properties << EOF
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
@@ -44,9 +40,8 @@ jobs:
           storeFile=emobies.keystore
           EOF
 
-      - name: Android 15 Biometric & Signing Fix
+      - name: Android 15 & Gradle Success Fix
         run: |
-          # MainActivity പുതിയ രീതിയിലേക്ക് മാറ്റുന്നു
           mkdir -p android/app/src/main/kotlin/com/nxtbit/emobies_24
           cat > android/app/src/main/kotlin/com/nxtbit/emobies_24/MainActivity.kt << 'EOF'
           package com.nxtbit.emobies_24
@@ -54,8 +49,19 @@ jobs:
           class MainActivity: FlutterFragmentActivity()
           EOF
 
-          # build.gradle ഫയലിലേക്ക് സൈനിംഗ് ലോജിക് ഇൻജക്ട് ചെയ്യുന്നു (വളരെ പ്രധാനം!)
+          # ഇത്തവണ flutterRoot കൃത്യമായി ഡിഫൈൻ ചെയ്തിട്ടുണ്ട്
           cat > android/app/build.gradle << 'EOF'
+          def localProperties = new Properties()
+          def localPropertiesFile = rootProject.file('local.properties')
+          if (localPropertiesFile.exists()) {
+              localPropertiesFile.withReader('UTF-8') { reader ->
+                  localProperties.load(reader)
+              }
+          }
+          def flutterRoot = localProperties.getProperty('flutter.sdk')
+          if (flutterRoot == null) {
+              throw new GradleException("Flutter SDK not found.")
+          }
           def keystoreProperties = new Properties()
           def keystorePropertiesFile = rootProject.file('key.properties')
           if (keystorePropertiesFile.exists()) {
@@ -89,13 +95,12 @@ jobs:
               }
           }
           dependencies {
-              implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+              implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0"
           }
           EOF
 
       - name: Build Production AAB
         run: |
-          # പ്ലേ സ്റ്റോറിലേക്കുള്ള ഫൈനൽ ബിൽഡ്
           flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
 
       - name: Upload Final AAB

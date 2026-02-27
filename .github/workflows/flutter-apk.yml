@@ -29,6 +29,42 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/emobies.keystore
 
+      - name: Fix MainActivity
+        run: |
+          mkdir -p android/app/src/main/kotlin/com/nxtbit/emobies_app
+          cat > android/app/src/main/kotlin/com/nxtbit/emobies_app/MainActivity.kt << 'EOF'
+          package com.nxtbit.emobies_app
+          import io.flutter.embedding.android.FlutterFragmentActivity
+          class MainActivity: FlutterFragmentActivity()
+          EOF
+
+      - name: Fix AndroidManifest
+        run: |
+          cat > android/app/src/main/AndroidManifest.xml << 'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:label="Emobies"
+                  android:name="${applicationName}"
+                  android:icon="@mipmap/ic_launcher">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTop"
+                      android:theme="@style/LaunchTheme"
+                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|density|fontScale"
+                      android:hardwareAccelerated="true"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+                  <meta-data android:name="flutterEmbedding" android:value="2"/>
+              </application>
+              <uses-permission android:name="android.permission.INTERNET"/>
+          </manifest>
+          EOF
+
       - name: Write build.gradle with signing
         run: |
           cat > android/app/build.gradle << 'EOF'
@@ -65,9 +101,9 @@ jobs:
               signingConfigs {
                   release {
                       storeFile file("emobies.keystore")
-                      storePassword "${{ secrets.KEYSTORE_PASSWORD }}"
-                      keyAlias "${{ secrets.KEY_ALIAS }}"
-                      keyPassword "${{ secrets.KEY_PASSWORD }}"
+                      storePassword System.getenv("KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("KEY_ALIAS")
+                      keyPassword System.getenv("KEY_PASSWORD")
                   }
               }
               buildTypes {
@@ -85,9 +121,17 @@ jobs:
           EOF
 
       - name: Build signed APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: flutter build apk --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
 
       - name: Build signed AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
 
       - name: Upload APK
@@ -95,9 +139,11 @@ jobs:
         with:
           name: Emobies-APK
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: Emobies-AAB-PlayStore
           path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30

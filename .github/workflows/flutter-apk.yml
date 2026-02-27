@@ -1,109 +1,50 @@
-name: Emobies Production APK
+name: Flutter Build APK
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - Emowall-Ai-2.0
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.1'
-          cache: true
+          flutter-version: '3.41.2'
 
-      - name: Get dependencies
+      - name: Fix MainActivity
+        run: |
+          mkdir -p android/app/src/main/kotlin/com/emobies/emowall/
+          cat > android/app/src/main/kotlin/com/emobies/emowall/MainActivity.kt << EOF
+          package com.emobies.emowall
+
+          import io.flutter.embedding.android.FlutterFragmentActivity
+
+          class MainActivity: FlutterFragmentActivity()
+          EOF
+
+      - name: Update target SDK to 35
+        run: |
+          sed -i 's/compileSdk 34/compileSdk 35/' android/app/build.gradle
+          sed -i 's/targetSdk 34/targetSdk 35/' android/app/build.gradle
+
+      - name: Flutter pub get
         run: flutter pub get
 
-      - name: Decode keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > /tmp/emobies.keystore
-
-      - name: Remove old android and recreate
-        run: |
-          rm -rf android
-          flutter create --org com.nxtbit --project-name emobies_24 --platforms android .
-          cp /tmp/emobies.keystore android/app/emobies.keystore
-
-      - name: Write build.gradle with signing
-        run: |
-          cat > android/app/build.gradle << GRADLEEOF
-          plugins {
-              id 'com.android.application'
-              id 'kotlin-android'
-              id 'dev.flutter.flutter-gradle-plugin'
-          }
-          android {
-              namespace 'com.nxtbit.emobies_24'
-              compileSdk 34
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-              kotlinOptions {
-                  jvmTarget = '17'
-              }
-              defaultConfig {
-                  applicationId 'com.nxtbit.emobies_24'
-                  minSdk 21
-                  targetSdk 34
-                  versionCode flutter.versionCode
-                  versionName flutter.versionName
-              }
-              signingConfigs {
-                  release {
-                      storeFile file('emobies.keystore')
-                      storePassword System.getenv('KEYSTORE_PASSWORD')
-                      keyAlias System.getenv('KEY_ALIAS')
-                      keyPassword System.getenv('KEY_PASSWORD')
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                      minifyEnabled false
-                      shrinkResources false
-                  }
-              }
-          }
-          flutter {
-              source '../..'
-          }
-          GRADLEEOF
-
-      - name: Build signed APK
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build apk --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
-
-      - name: Build signed AAB
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Emobies-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 30
+      - name: Build AAB
+        run: flutter build appbundle --release
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Emobies-AAB-PlayStore
+          name: emowall-release-aab
           path: build/app/outputs/bundle/release/app-release.aab
-          retention-days: 30

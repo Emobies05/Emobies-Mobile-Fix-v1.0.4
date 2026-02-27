@@ -24,6 +24,7 @@ jobs:
 
       - name: Specialist Project Reset
         run: |
+          # ആൻഡ്രോയിഡ് ഫോൾഡർ പുതിയ രീതിയിൽ നിർമ്മിക്കുന്നു
           rm -rf android
           flutter create . --platforms=android --org com.nxtbit --project-name emobies_24
 
@@ -32,7 +33,10 @@ jobs:
 
       - name: Decode Keystore & Signing Setup
         run: |
+          # കീസ്റ്റോർ ഡീകോഡ് ചെയ്യുന്നു
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/emobies.keystore
+          
+          # key.properties സെറ്റ് ചെയ്യുന്നു
           cat > android/key.properties << EOF
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
@@ -40,8 +44,9 @@ jobs:
           storeFile=emobies.keystore
           EOF
 
-      - name: Android 15 & Version Mismatch Fix
+      - name: Android 15 & Signing Inject
         run: |
+          # MainActivity പുതിയ രീതിയിലേക്ക് മാറ്റുന്നു
           mkdir -p android/app/src/main/kotlin/com/nxtbit/emobies_24
           cat > android/app/src/main/kotlin/com/nxtbit/emobies_24/MainActivity.kt << 'EOF'
           package com.nxtbit.emobies_24
@@ -49,19 +54,8 @@ jobs:
           class MainActivity: FlutterFragmentActivity()
           EOF
 
-          # ഇത്തവണ Java 17 വെർഷൻ നിർബന്ധമാക്കിയിട്ടുണ്ട്
+          # build.gradle ഫയലിലേക്ക് സൈനിംഗ് ലോജിക് ചേർക്കുന്നു
           cat > android/app/build.gradle << 'EOF'
-          def localProperties = new Properties()
-          def localPropertiesFile = rootProject.file('local.properties')
-          if (localPropertiesFile.exists()) {
-              localPropertiesFile.withReader('UTF-8') { reader ->
-                  localProperties.load(reader)
-              }
-          }
-          def flutterRoot = localProperties.getProperty('flutter.sdk')
-          if (flutterRoot == null) {
-              throw new GradleException("Flutter SDK not found.")
-          }
           def keystoreProperties = new Properties()
           def keystorePropertiesFile = rootProject.file('key.properties')
           if (keystorePropertiesFile.exists()) {
@@ -79,13 +73,6 @@ jobs:
                   targetSdkVersion 35
                   versionCode 106
                   versionName "1.0.6"
-              }
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-              kotlinOptions {
-                  jvmTarget = '17'
               }
               signingConfigs {
                   release {
@@ -108,10 +95,11 @@ jobs:
 
       - name: Build Production AAB
         run: |
+          # പ്ലേ സ്റ്റോറിലേക്കുള്ള ഫൈനൽ ബിൽഡ്
           flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
 
       - name: Upload Final AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Emobies-AAB-VERIFIED-SUCCESS
+          name: Emobies-AAB-FINAL-VERIFIED
           path: build/app/outputs/bundle/release/app-release.aab

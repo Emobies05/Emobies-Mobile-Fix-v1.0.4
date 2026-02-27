@@ -31,7 +31,7 @@ jobs:
       - name: Remove old android and recreate
         run: |
           rm -rf android
-          flutter create --org com.nxtbit --project-name emobies_app --platforms android .
+          flutter create --org com.nxtbit --project-name emobies_24 --platforms android .
           cp /tmp/emobies.keystore android/app/emobies.keystore
 
       - name: Write build.gradle with signing
@@ -43,7 +43,7 @@ jobs:
               id 'dev.flutter.flutter-gradle-plugin'
           }
           android {
-              namespace 'com.nxtbit.emobies_app'
+              namespace 'com.nxtbit.emobies_24'
               compileSdk 34
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
@@ -53,7 +53,7 @@ jobs:
                   jvmTarget = '17'
               }
               defaultConfig {
-                  applicationId 'com.nxtbit.emobies_app'
+                  applicationId 'com.nxtbit.emobies_24'
                   minSdk 21
                   targetSdk 34
                   versionCode flutter.versionCode

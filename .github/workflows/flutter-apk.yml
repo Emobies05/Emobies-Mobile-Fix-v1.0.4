@@ -32,6 +32,12 @@ jobs:
           class MainActivity: FlutterFragmentActivity()
           EOF
 
+      - name: Decode keystore
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/emobies.keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
       - name: Flutter clean
         run: flutter clean
 
@@ -40,6 +46,9 @@ jobs:
 
       - name: Build AAB
         run: flutter build appbundle --release
+
+      - name: List AAB output
+        run: ls -lh build/app/outputs/bundle/release
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4

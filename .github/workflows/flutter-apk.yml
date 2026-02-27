@@ -22,6 +22,12 @@ jobs:
           flutter-version: '3.27.1'
           cache: true
 
+      - name: Cleanup Legacy Files
+        run: |
+          # പഴയ v1 embedding ഉണ്ടാക്കുന്ന ജാവ ഫയലുകൾ പൂർണ്ണമായും നീക്കം ചെയ്യുന്നു
+          rm -rf android/app/src/main/java
+          rm -rf android/app/src/main/kotlin
+
       - name: Get dependencies
         run: flutter pub get
 
@@ -31,9 +37,10 @@ jobs:
 
       - name: Fix MainActivity
         run: |
-          mkdir -p android/app/src/main/kotlin/com/nxtbit/emobies_app
-          cat > android/app/src/main/kotlin/com/nxtbit/emobies_app/MainActivity.kt << 'EOF'
-          package com.nxtbit.emobies_app
+          # പാക്കേജ് നെയിം കറക്റ്റ് ആയി സെറ്റ് ചെയ്യുന്നു: com.nxtbit.emobies_24
+          mkdir -p android/app/src/main/kotlin/com/nxtbit/emobies_24
+          cat > android/app/src/main/kotlin/com/nxtbit/emobies_24/MainActivity.kt << 'EOF'
+          package com.nxtbit.emobies_24
           import io.flutter.embedding.android.FlutterFragmentActivity
           class MainActivity: FlutterFragmentActivity()
           EOF
@@ -41,7 +48,7 @@ jobs:
       - name: Fix AndroidManifest
         run: |
           cat > android/app/src/main/AndroidManifest.xml << 'EOF'
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.nxtbit.emobies_24">
               <application
                   android:label="Emobies"
                   android:name="${applicationName}"
@@ -65,85 +72,23 @@ jobs:
           </manifest>
           EOF
 
-      - name: Write build.gradle with signing
+      - name: Build signed AAB (Bundle)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          cat > android/app/build.gradle << 'EOF'
-          def localProperties = new Properties()
-          def localPropertiesFile = rootProject.file('local.properties')
-          if (localPropertiesFile.exists()) {
-              localPropertiesFile.withReader('UTF-8') { reader ->
-                  localProperties.load(reader)
-              }
-          }
-          def flutterRoot = localProperties.getProperty('flutter.sdk')
-          if (flutterRoot == null) {
-              throw new GradleException("Flutter SDK not found.")
-          }
-          apply plugin: 'com.android.application'
-          apply plugin: 'kotlin-android'
-          apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
-          android {
-              namespace "com.nxtbit.emobies_app"
-              compileSdkVersion 34
-              ndkVersion flutter.ndkVersion
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-              kotlinOptions { jvmTarget = '17' }
-              defaultConfig {
-                  applicationId "com.nxtbit.emobies_app"
-                  minSdkVersion 21
-                  targetSdkVersion 34
-                  versionCode flutterVersionCode.toInteger()
-                  versionName flutterVersionName
-              }
-              signingConfigs {
-                  release {
-                      storeFile file("emobies.keystore")
-                      storePassword System.getenv("KEYSTORE_PASSWORD")
-                      keyAlias System.getenv("KEY_ALIAS")
-                      keyPassword System.getenv("KEY_PASSWORD")
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                      minifyEnabled false
-                      shrinkResources false
-                  }
-              }
-          }
-          flutter { source '../..' }
-          dependencies {
-              implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-          }
-          EOF
-
-      - name: Build signed APK
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build apk --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
-
-      - name: Build signed AAB
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Emobies-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 30
+          # നേരിട്ട് സൈൻ ചെയ്ത് ബിൽഡ് ചെയ്യുന്നു - ഇതാണ് ഏറ്റവും സുരക്ഷിതമായ വഴി
+          flutter build appbundle --release \
+            --target-platform android-arm64 \
+            --key-store-password="$KEYSTORE_PASSWORD" \
+            --key-password="$KEY_PASSWORD" \
+            --keystore=android/app/emobies.keystore \
+            --alias="$KEY_ALIAS" \
+            --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
 
       - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Emobies-AAB-PlayStore
+          name: Emobies-AAB-Final
           path: build/app/outputs/bundle/release/app-release.aab
-          retention-days: 30

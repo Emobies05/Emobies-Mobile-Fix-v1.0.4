@@ -26,16 +26,13 @@ jobs:
 
       - name: Decode keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/emobies.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > /tmp/emobies.keystore
 
-      - name: Fix MainActivity
+      - name: Remove old android and recreate
         run: |
-          mkdir -p android/app/src/main/kotlin/com/nxtbit/emobies_app
-          cat > android/app/src/main/kotlin/com/nxtbit/emobies_app/MainActivity.kt << MAINEOF
-          package com.nxtbit.emobies_app
-          import io.flutter.embedding.android.FlutterFragmentActivity
-          class MainActivity: FlutterFragmentActivity()
-          MAINEOF
+          rm -rf android
+          flutter create --org com.nxtbit --project-name emobies_app --platforms android .
+          cp /tmp/emobies.keystore android/app/emobies.keystore
 
       - name: Write build.gradle with signing
         run: |

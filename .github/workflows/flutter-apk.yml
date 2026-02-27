@@ -1,23 +1,62 @@
-- name: Write build.gradle with signing
+name: Emobies Production APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.1'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Decode keystore
         run: |
-          cat > android/app/build.gradle << 'EOF'
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/emobies.keystore
+
+      - name: Fix MainActivity
+        run: |
+          mkdir -p android/app/src/main/kotlin/com/nxtbit/emobies_app
+          cat > android/app/src/main/kotlin/com/nxtbit/emobies_app/MainActivity.kt << MAINEOF
+          package com.nxtbit.emobies_app
+          import io.flutter.embedding.android.FlutterFragmentActivity
+          class MainActivity: FlutterFragmentActivity()
+          MAINEOF
+
+      - name: Write build.gradle with signing
+        run: |
+          cat > android/app/build.gradle << GRADLEEOF
           plugins {
-              id "com.android.application"
-              id "kotlin-android"
-              id "dev.flutter.flutter-gradle-plugin"
+              id 'com.android.application'
+              id 'kotlin-android'
+              id 'dev.flutter.flutter-gradle-plugin'
           }
           android {
-              namespace "com.nxtbit.emobies_app"
+              namespace 'com.nxtbit.emobies_app'
               compileSdk 34
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
               }
               kotlinOptions {
-                  jvmTarget = "17"
+                  jvmTarget = '17'
               }
               defaultConfig {
-                  applicationId "com.nxtbit.emobies_app"
+                  applicationId 'com.nxtbit.emobies_app'
                   minSdk 21
                   targetSdk 34
                   versionCode flutter.versionCode
@@ -25,10 +64,10 @@
               }
               signingConfigs {
                   release {
-                      storeFile file("emobies.keystore")
-                      storePassword System.getenv("KEYSTORE_PASSWORD")
-                      keyAlias System.getenv("KEY_ALIAS")
-                      keyPassword System.getenv("KEY_PASSWORD")
+                      storeFile file('emobies.keystore')
+                      storePassword System.getenv('KEYSTORE_PASSWORD')
+                      keyAlias System.getenv('KEY_ALIAS')
+                      keyPassword System.getenv('KEY_PASSWORD')
                   }
               }
               buildTypes {
@@ -40,6 +79,34 @@
               }
           }
           flutter {
-              source "../.."
+              source '../..'
           }
-          EOF
+          GRADLEEOF
+
+      - name: Build signed APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: flutter build apk --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
+
+      - name: Build signed AAB
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Emobies-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: Emobies-AAB-PlayStore
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30

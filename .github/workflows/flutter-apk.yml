@@ -92,7 +92,12 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}"
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: flutter build appbundle --release --dart-define=API_BASE="${{ secrets.API_BASE_URL }}" --dart-define=GEMINI_KEY="${{ secrets.GEMINI_API_KEY }}" --dart-define=CLOUDINARY_NAME="${{ secrets.CLOUDINARY_CLOUD_NAME }}"
+          
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

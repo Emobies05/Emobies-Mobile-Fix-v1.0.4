@@ -1,128 +1,126 @@
-# 🔧 Emobies
-### *Your Trusted Mobile Repair Partner*
+# Emobies 🔧
 
-> Built from Dubai 🇦🇪 · Powered by Seven Brains 🧠 · Made for Kerala 🌿
+**Mobile Repair. Reimagined.**
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.27.0-02569B?logo=flutter)](https://flutter.dev)
-[![Version](https://img.shields.io/badge/Version-1.0.7-00E676)](https://github.com/Emobies05/Emobies-AP-135)
-[![Platform](https://img.shields.io/badge/Platform-Android-brightgreen?logo=android)](https://play.google.com)
-[![Backend](https://img.shields.io/badge/Backend-Railway-FF5500)](https://railway.app)
-[![License](https://img.shields.io/badge/License-MIT-FF5500)](LICENSE)
+Built from Dubai 🇦🇪 · Powered by Seven Brains 🧠 · Made for Kerala 🌿 India 🇮🇳
 
 ---
 
-## 📱 What is Emobies?
+## What is Emobies?
 
-Emobies is a full-stack mobile repair service platform — connecting customers with trusted repair technicians, delivery boys, and service centres.
+Emobies is a full-stack mobile repair ecosystem — not just an app. It connects customers, delivery agents, service centers, supervisors, and admins on one platform.
 
-Built entirely on a phone 📱 using Termux + Acode, backend deployed on Railway.
+**The Problem:** Broken phone. No trusted repair shop. No price transparency. No tracking.
 
----
-
-## ✨ Features
-
-| Feature | Description |
-|---------|-------------|
-| 🔧 **Repair Complaints** | Submit, track, and manage repair requests |
-| 💬 **Live Chat** | Chat per complaint with technician |
-| 🚚 **Delivery Boy** | Pickup & delivery tracking |
-| 🏪 **Service Centre** | Assign complaints to service centres |
-| 🪙 **EmoCoins** | Loyalty rewards system |
-| 🤖 **AI Chatbot** | Gemini-powered repair assistant |
-| 👑 **Admin Panel** | Full superadmin + staff management |
-| 🔐 **Secure Auth** | JWT-based login + register |
+**The Solution:** Emobies — register a complaint, get pickup, track repair, pay securely, earn EmoCoins.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
-```
-Flutter App (Android)
-      ↓
-Node.js + Express API (Railway)
-      ↓
-MongoDB (In-memory / Atlas)
-      ↓
-Gemini AI (Google)
-```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Flutter   │────▶│   Node.js   │────▶│   Supabase  │
+│   (Android) │◄────│   (Render)  │◄────│  (Realtime) │
+└─────────────┘     └─────────────┘     └─────────────┘
+│                   │                   │
+▼                   ▼                   ▼
+┌─────────┐        ┌─────────┐        ┌─────────┐
+│ Emo AI  │        │Razorpay │        │Telegram │
+│(Worker) │        │(Payment)│        │(Alerts) │
+└─────────┘        └─────────┘        └─────────┘
 
----
-
-## 🚀 Backend API
-
-**Base URL:** `https://emobies-ap-135-production.up.railway.app`
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/auth/register` | POST | Register user |
-| `/api/auth/login` | POST | Login user |
-| `/api/complaints` | GET/POST | Manage complaints |
-| `/api/chat/:id` | GET/POST | Chat per complaint |
-| `/api/emocoins/balance` | GET | EmoCoins balance |
-| `/api/ai/chat` | POST | Gemini AI chat |
 
 ---
 
-## 👑 Superadmin
+## Roles
 
-```
-Phone: 9847842172
-Password: Emobies@2026!
-```
-
----
-
-## 📦 Tech Stack
-
-```
-Frontend:    Flutter 3.27.0 (Dart)
-Backend:     Node.js + Express
-AI:          Gemini API (Google)
-Deploy:      Railway (Backend) + Vercel (Web)
-Build:       GitHub Actions
-Store:       Google Play Console
-```
+| Role | What They Do |
+|------|-------------|
+| **Customer** | Register complaints, track status, chat, pay, earn EmoCoins |
+| **Delivery** | Pickup & drop devices, upload photos, confirm locations |
+| **Service Center** | Receive devices, diagnose, repair, update status |
+| **Supervisor** | Assign complaints, manage staff, monitor chats |
+| **Admin** | Full analytics, staff management, all complaints |
 
 ---
 
-## 🚀 Build & Deploy
+## Features
+
+- **🔧 Smart Complaints** — Register with device details, issue type, photos
+- **🚚 Live Tracking** — GPS-based pickup & delivery with Google Maps
+- **💬 AI-Monitored Chat** — Per-complaint chat with Emo AI oversight
+- **🪙 EmoCoins** — Earn 1 coin per ₹100 spent, redeem up to 50% of bill
+- **🤖 Emo AI** — Customer support, no hallucination, Malayalam + English
+- **🔐 Biometric Auth** — Fingerprint/face unlock for staff
+- **💳 Razorpay** — Secure payments with instant verification
+- **📊 Admin Analytics** — Real-time dashboards, staff performance
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Flutter 3.27.0, Dart 3.6 |
+| Backend | Node.js + Express (Render) |
+| Database | Supabase (PostgreSQL + Realtime) |
+| AI | Cloudflare Workers + Llama 3.1 |
+| Auth | JWT + SHA-256 + Biometric |
+| Payment | Razorpay |
+| Maps | Google Maps Flutter |
+| Storage | Supabase Storage |
+
+---
+
+## Security
+
+- Passwords hashed with SHA-256 + salt
+- Rate limiting (5 attempts / minute)
+- JWT tokens with refresh mechanism
+- Biometric authentication for staff
+- Telegram/Discord alerts for staff logins
+
+---
+
+## Build
 
 ```bash
-# Clone repo
-git clone https://github.com/Emobies05/Emobies-AP-135.git
+# Clone
+git clone https://github.com/EmoThewall05/Emobies-Mobile-Fix-v1.0.4.git
+cd Emobies-Mobile-Fix-v1.0.4
 
-# Install dependencies
+# Dependencies
 flutter pub get
 
 # Build APK
 flutter build apk --release
-```
 
----
+# Build AAB (Play Store)
+flutter build appbundle --release
 
-## 🌐 Links
+| Variable            | Purpose             |
+| ------------------- | ------------------- |
+| `API_BASE`          | Backend URL         |
+| `SUPABASE_URL`      | Database URL        |
+| `SUPABASE_ANON_KEY` | Database key        |
+| `EMO_KEY_BASE`      | EmoKey verification |
+| `CF_AI_BASE`        | Emo AI worker       |
+| `RAZORPAY_KEY`      | Payment gateway     |
 
-- 🔧 **App:** Google Play Store (Publishing)
-- 🌍 **Web:** [emobies-ap-135.vercel.app](https://emobies-ap-135.vercel.app)
-- 📄 **Privacy Policy:** [emobies05.github.io/public-/privacy-policy.html](https://emobies05.github.io/public-/privacy-policy.html)
-- 🦋 **Sister App:** [Emowall AI 2.0](https://github.com/Emobies05/Emobies-AP-135/tree/Emowall-Ai-2.0)
+Emo AI
+"I don't know" > "I guess"
+Emo AI is the customer support brain. Built on Cloudflare Workers with Llama 3.1. It knows:
+EmoCoin rules
+Complaint status checks
+General support
+Never makes up prices or repair times
 
----
-
-## 🧠 Powered by Seven Brains
-
-Same multi-AI architecture as Emowall AI 2.0 — Claude, Gemini, ChatGPT, Cursor, Copilot, DeepSeek, Perplexity working together.
-
----
-
-## 🦋 Vision
-
-> *"Emobies is not just a repair app.*
-> *It's the foundation of an ecosystem —*
-> *Emobies + Emowall + TheWall = One Platform."*
-
-**Emobies — Built by Dwin from Dubai 🇦🇪, Powered by Seven Brains 🧠✨**
-
----
-
-*Package: `com.nxtbit.emobies_24` · Min SDK: 21 · Target SDK: 35*
+Vision
+"Emobies is not just a repair app. It's the foundation of an ecosystem — Emobies + Emowall + TheWall = One Platform."
+Creator
+Thewin (Dwin 05)
+Built from Dubai 🇦🇪 | Powered by Seven Brains 🧠 | Made for Kerala 🌿
+GitHub: @EmoThewall05
+License
+MIT
+Follow the flow 🦋

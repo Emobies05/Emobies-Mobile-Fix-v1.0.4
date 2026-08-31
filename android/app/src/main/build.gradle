@@ -1,7 +1,0 @@
-namespace 'com.nxtbit.emobies_24'
-compileSdk 35
-...
-defaultConfig {
-    applicationId 'com.nxtbit.emobies_24'
-    minSdk 21
-    targetSdk 35

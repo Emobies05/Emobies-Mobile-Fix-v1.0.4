@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "263206021572",
+    "project_id": "emobies",
+    "storage_bucket": "emobies.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263206021572:android:d9755e23dac637a6759c91",
+        "android_client_info": {
+          "package_name": "com.nxtbit.emobies_24"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMlYlFb0Pon5DUV9joFjGikUYKH_V6mgU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263206021572:android:514b6efaa5a4a5a7759c91",
+        "android_client_info": {
+          "package_name": "emobies.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMlYlFb0Pon5DUV9joFjGikUYKH_V6mgU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

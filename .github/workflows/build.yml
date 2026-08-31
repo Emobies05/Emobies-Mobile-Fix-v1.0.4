@@ -1,0 +1,79 @@
+name: Build AAB
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.0'
+          channel: 'stable'
+
+      - name: Install NDK
+        run: |
+          echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.0.13004108"
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/emobies_decoded.p12
+
+      - run: flutter pub get
+
+      - run: flutter pub run flutter_launcher_icons
+
+      - name: Build AAB
+        run: |
+          flutter build appbundle --release --verbose --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} || true
+          echo "===== SEARCHING FOR ANY AAB FILE ====="
+          find . -name "*.aab" -type f 2>/dev/null || echo "No AAB found anywhere"
+          echo "===== RUNNING GRADLE DIRECTLY WITH STACKTRACE ====="
+          cd android && ./gradlew bundleRelease --stacktrace --info > ../gradle_full_log.txt 2>&1 || true
+          cd ..
+          echo "===== LAST 150 LINES OF GRADLE LOG ====="
+          tail -150 gradle_full_log.txt
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Show manifest merger report
+        if: always()
+        run: |
+          echo "===== SEARCHING FOR MANIFEST MERGER REPORT ====="
+          find . -iname "manifest-merger-release-report.txt" -exec echo "FOUND: {}" \; -exec grep -B 2 -A 3 "SEND_SMS\|CALL_PHONE" {} \;
+
+      - name: Upload logs and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-logs
+          path: |
+            gradle_full_log.txt
+            **/manifest-merger-release-report.txt
+
+      - name: Verify aab exists
+        run: |
+          if [ -f "android/app/build/outputs/bundle/release/app-release.aab" ]; then
+            echo "AAB found successfully"
+          else
+            echo "AAB NOT FOUND - real build failure"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
